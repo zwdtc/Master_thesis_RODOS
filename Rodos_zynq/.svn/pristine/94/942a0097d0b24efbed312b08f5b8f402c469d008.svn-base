@@ -1,0 +1,23 @@
+#ifndef MULTICORE_H_
+#define MULTICORE_H_
+
+//#include "portmacro.h"
+//#include "pvr.h"
+
+#define PRIMARY_CPU_CODE 	0
+#define SECONDARY_CPU_CODE 		1
+#define MAX_PROCESSOR_NUM   2
+//#define MAX_DEBUG_TEXT_LENGTH		40
+
+typedef struct {
+
+	volatile char secondaryCoreBusyFlag;
+	volatile char secondaryCoreSchedEnable; 
+	volatile void * startFirstTaskPtr;
+
+} cpuComBlock;
+
+//cpuComBlock * cpuComBlockPtr = (cpuComBlock *)(0xffff0000);
+//unsigned portBASE_TYPE xPortGetCurrentCPU();
+
+#endif /* MULTICORE_H_ */
