@@ -1,0 +1,107 @@
+/****************************************************************************
+ **
+ ** Copyright (c) 2012 David Welch dwelch@dwelch.com
+ ** with portions Copyright (c) 2013 University Wuerzburg
+ ** and German Aerospace Center (DLR)
+ **
+ ** Permission is hereby granted, free of charge, to any person obtaining a
+ ** copy of this software and associated documentation files (the "Software"),
+ ** to deal in the Software without restriction, including without limitation
+ ** the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ ** and/or sell copies of the Software, and to permit persons to whom the
+ ** Software is furnished to do so, subject to the following conditions:
+ **
+ ** The above copyright notice and this permission notice shall be included
+ ** in all copies or substantial portions of the Software.
+ **
+ ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ ** OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ ** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ ** THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ ** LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ ** FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ ** DEALINGS IN THE SOFTWARE.
+ **
+ ****************************************************************************/
+
+/**
+ * @file vector.S
+ * @date 2013/06/01
+ * @author Johannes Freitag, David Welch
+ *
+ * Copyright 2013 DLR and University Wuerzburg
+ */
+
+.org 0
+.text
+
+.globl _boot
+
+.globl _vector_table
+/* FIQInterrupt defined in the standalone package*/
+.globl FIQInterrupt
+.globl c_irq_handler
+/* DataAbortInterrupt defined in the standaone package*/
+.globl DataAbortInterrupt
+/* PrefetchAbortInterrupt defined in the standaone package*/
+.globl PrefetchAbortInterrupt
+.globl IRQHandler
+
+.section .vectors,"ax"
+	.code 32
+_vector_table:
+	B	  _boot
+	B	  Undefined
+	ldr   pc, _swi
+	B	  PrefetchAbortHandler
+	B	  DataAbortHandler
+	NOP	  /* Placeholder for address exception vector*/
+	ldr   pc, _irq
+	B	  FIQHandler
+
+_irq:   .word c_irq_handler
+_swi:   .word c_irq_handler
+
+
+FIQHandler:						/* FIQ vector handler */
+	stmdb	sp!,{r0-r3,r12,lr}	/* state save from compiled code */
+
+FIQLoop:
+	bl	FIQInterrupt			/* FIQ vector */
+
+	ldmia	sp!,{r0-r3,r12,lr}	/* state restore from compiled code */
+	subs	pc, lr, #4			/* adjust return */
+
+
+Undefined:						/* Undefined handler */
+	stmdb	sp!,{r0-r3,r12,lr}	/* state save from compiled code */
+
+	ldmia	sp!,{r0-r3,r12,lr}	/* state restore from compiled code */
+
+	b	_prestart
+
+	movs	pc, lr
+
+
+DataAbortHandler:				/* Data Abort handler */
+	stmdb	sp!,{r0-r3,r12,lr}	/* state save from compiled code */
+
+	movs	r11, sp
+
+	bl	DataAbortInterrupt		/*DataAbortInterrupt :call C function here */
+
+	ldmia	sp!,{r0-r3,r12,lr}	/* state restore from compiled code */
+
+	subs	pc, lr, #4			/* adjust return */
+
+PrefetchAbortHandler:			/* Prefetch Abort handler */
+	stmdb	sp!,{r0-r3,r12,lr}	/* state save from compiled code */
+
+	bl	PrefetchAbortInterrupt	/* PrefetchAbortInterrupt: call C function here */
+
+	ldmia	sp!,{r0-r3,r12,lr}	/* state restore from compiled code */
+
+	subs	pc, lr, #4			/* adjust return */
+
+
+.end

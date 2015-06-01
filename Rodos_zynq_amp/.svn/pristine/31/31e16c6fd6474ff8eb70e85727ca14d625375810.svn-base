@@ -1,0 +1,53 @@
+#
+# Copyright (C) 2014 DLR.
+#
+# This file is part of the port for RODOS made by DLR to allow Rodos
+# to operate with Xilinx Zynq devices.
+#
+# Modified based on the FreeRTOS_Zynq files, under
+# the terms of the GNU General Public License (version 2) as published by the
+# Free Software Foundation
+#
+# @Author Wei Zhang (wei.zhang@dlr.de or wei.zhang0117@gmail.com)
+# @func  associate with the tcl file to define the parameters for Rodos, let xilinx SDK recognize and fully support.
+#		 please read the xilinx PlatformSpecification Format Reference Manual below in detail.
+#  		 https://www.google.de/?gws_rd=ssl#q=Platform+Specification+Format+Reference+Manual+13.4
+# @
+# @
+
+OPTION psf_version = 2.1.0 ; 
+BEGIN OS rodos_zynq 
+		
+  OPTION DRC = rodos_drc ; 
+  OPTION supported_peripherals = ps7_cortexa9;
+  OPTION COPYFILES = all;	
+  OPTION DEPENDS = (standalone_v3_10_a);
+  #OPTION APP_COMPILER_FLAGS = "-D__USE_AMP__";
+  OPTION APP_LINKER_FLAGS = "-Wl,--start-group,-lxil,-lrodos,-lgcc,-lc,--end-group";
+
+  OPTION DESC = "Rodos is a RTOS that designed and implemented in German Aerospace Center";
+
+  # STDIN/STDOUT
+  PARAM name = stdin, type = peripheral_instance, requires_interface = stdin, default=none, desc = "Specify the instance name of the standard input peripheral";
+  PARAM name = stdout, type = peripheral_instance, requires_interface = stdout, default=none, desc = "Specify the instance name of the standard output peripheral";
+
+  BEGIN CATEGORY kernel_behavior
+	PARAM name = kernel_behavior, type = bool, default = true, desc = "Parameters relating to the kernel behavior", permit = user;
+	PARAM name = XMALLOC_SIZE, type = int, default = 50*1024*1024, desc = "Memory for allocation (xmalloc) for all stacks.";
+	PARAM name = DEFAULT_STACKSIZE, type = int, default = 512*1024, desc = "stack size (in bytes) for threads.";
+	PARAM name = SCHEDULER_STACKSIZE, type = int, default = 512*1024, desc = "stack size (in bytes) for scheduler thread.";
+	PARAM name = PARAM_TIMER_INTERVAL, type = int, default = 10000, desc = "time interval between timer interrupts in microseconds.";
+  END CATEGORY
+  
+  BEGIN CATEGORY kernel_features
+	PARAM name = kernel_features, type = bool, default = true, desc = "Include or exclude kernel features", permit = user;
+	PARAM name = DEFAULT_THREAD_PRIORITY, type = int, default = 100, desc = "default priority for newly created threads.";
+	PARAM name = MAX_THREAD_PRIORITY, type = int, default = 1000, desc = "user threads shall not have a priority higher than this.";
+	PARAM name = NETWORKREADER_PRIORITY, type = int, default = 1002, desc = "high priority levels for networking priority.";
+	PARAM name = CEILING_PRIORITY, type = int, default = 1003, desc = "high priority levels for priority ceiling.";
+	PARAM name = MAX_NUMBER_OF_NODES, type = int, default = 10, desc = "using a network, the maximal number of nodes attached.";
+	PARAM name = MAX_NETWORK_MESSAGE_LENGTH, type = int, default = 1300, desc = "if using network it may have a limit for pakets, eg udp 1500.";
+	PARAM name = MAX_SUBSCRIBERS, type = int, default = 60, desc = "If using a network: Maximal number of subscribers per node.";
+  END CATEGORY
+  
+END OS 
